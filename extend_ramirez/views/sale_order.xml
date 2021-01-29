@@ -1,0 +1,37 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="view_sale_order_form_inherit_view">
+            <field name="name">view.sale.order.form.inherit.view</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="replace">
+                  <field name="product_uom_qty" context="{                                             'partner_id': parent.partner_id,                                             'quantity': product_uom_qty,                                             'pricelist': parent.pricelist_id,                                             'uom': product_uom,                                             'company_id': parent.company_id                                         }" sum="Total Cantidad"/>
+                                    
+                                    
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='qty_delivered']" position="replace">
+                 <field name="qty_delivered" string="Entregado" attrs="{                                             'column_invisible': [('parent.state', 'not in', ['sale', 'done'])],                                             'readonly': [('qty_delivered_method', '!=', 'manual')]                                         }" optional="show" sum="Total Entregado"/>
+                                    
+                </xpath>
+                 <xpath expr="//field[@name='order_line']/tree/field[@name='qty_invoiced']" position="replace">
+                  <field name="qty_invoiced" string="Facturado" attrs="{'column_invisible': [('parent.state', 'not in', ['sale', 'done'])]}" optional="show" sum="Total Facturado"/>
+                                                                       
+                </xpath>
+                <xpath expr="//field[@name='partner_id']" position="after">
+                  <field name="qty_product" invisible="1"/>
+                </xpath>
+                 <xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="before">
+                  <field name="price_unit_cal"/>
+                </xpath>
+
+                 <xpath expr="//field[@name='order_line']/tree/field[@name='price_unit']" position="replace">
+                   <field name="price_unit" string="Precio Publico" attrs="{'readonly': [('qty_invoiced', '&gt;', 0)]}"/>
+                                   
+                </xpath>
+                    
+                    
+            </field>
+        </record>
+  </data>
+</odoo>

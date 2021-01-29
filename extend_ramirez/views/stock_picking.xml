@@ -1,0 +1,38 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="view_stock_picking_form_inherit_view">
+            <field name="name">view.stock.picking.form.inherit.view</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_uom_qty']" position="replace">
+                  <field name="product_uom_qty" string="Demanda" attrs="{'column_invisible': [('parent.immediate_transfer', '=', True)], 'readonly': ['|', ('is_initial_demand_editable', '=', False), '&amp;', '&amp;', ('show_operations', '=', True), ('is_locked', '=', True), ('is_initial_demand_editable', '=', False)]}" sum="Total Demanda"/>
+                                    
+                </xpath>
+                 <xpath expr="//field[@name='origin']" position="after">
+                  <field name="qty_product" invisible="1"/>
+                  <field name="cost" invisible="1"/>
+                  <field name="pric" invisible="1"/>
+                 </xpath>
+                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='quantity_done']" position="replace">
+                  <field name="quantity_done" string="Hecho" attrs="{'readonly': [('is_quantity_done_editable', '=', False)]}" sum="Total Hecho"/>
+                                   
+                </xpath>
+                    
+            </field>
+        </record>
+         <record model="ir.ui.view" id="view_stock_picking_list_inherit_view">
+            <field name="name">view.stock.picking.list.inherit.view</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.vpicktree"/>
+            <field name="arch" type="xml">
+                 <xpath expr="//field[@name='scheduled_date']" position="after">
+                   <field name="qty_product" optional="show"/>
+                   <field name="cost" optional="show"/>
+                   <field name="pric" optional="show"/>
+                 </xpath>              
+                    
+            </field>
+        </record>
+  </data>
+</odoo>

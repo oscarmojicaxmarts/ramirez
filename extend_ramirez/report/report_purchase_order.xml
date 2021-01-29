@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+ 
+
+     <template id="purchase_sale.matrix3">
+       <t t-set="data" t-value="order.get_vals()"/>
+           <t t-set="cols" t-value="data['cols']"/>
+           <t t-set="data" t-value="data['data']"/>
+           <table
+                   class="o_list_table table table-sm table-hover table-striped"
+                   style="width:100%; font-size: 8pt;"
+                   t-foreach="data" t-as="tmpl"
+           >
+               <thead>
+                    <tr>
+                        <th style="width:15% !important;"><span >Img</span></th>
+                        <th style="width:15% !important;"><span >Producto</span></th>
+                        <th style="width:2%;" class="text-left" t-foreach="len(cols[tmpl])" t-as="index">
+                            <span t-esc="cols[tmpl][index+1]"/>
+                        </th>
+                        <t t-if="len(cols[tmpl]) &lt; 25">
+                          <t t-set="col" t-value="25 - len(cols[tmpl])"/>
+                          <th style="width:2%;" class="text-left" t-foreach="col" t-as="index">
+                            
+                        </th>
+                        </t>
+                        
+                        <th tyle="width:4% !important;"><span>Precio unitario</span></th>
+                        <th tyle="width:4% !important;"><span>Cantidad modelos</span></th>
+                        <th tyle="width:4% !important;"><span>Descuento</span></th>
+                        <th tyle="width:4% !important;"><span>Impuestos</span></th>
+                        <th tyle="width:4% !important;"><span>Subtotal</span></th>
+                    </tr>
+               </thead>
+               <tbody>
+                    <tr>
+                        <t t-set="product" t-value="data[tmpl]"/>
+                        <td>
+                            <img  t-if="product['image_128']" t-att-src="image_data_uri(product['image_128'])" alt="Product"/>
+                        </td>
+                        <td><span t-esc="product['display_name']"/></td>
+                        <t t-set="qty" t-value="0"/>
+                        <td class="text-left" t-foreach="cols[tmpl]" t-as="index">
+                            <span t-esc="int(product[index])"/>
+                            <t t-set="qty" t-value="qty + product[index]"/>
+                        </td>
+                        <t t-if="len(cols[tmpl]) &lt; 25">
+                          <t t-set="col" t-value="25 - len(cols[tmpl])"/>
+                           <td  class="text-left" t-foreach="col" t-as="index">
+                            
+                        </td>
+                        </t>
+                        <td><span t-esc="product['price_unit']"/></td>
+                        <td><span t-esc="int(qty)"/></td>
+                        <td><span t-esc="product['discount']"/></td>
+                        <td><span t-esc="product['taxes']"/></td>
+                        <td><span t-esc="'%.2f'% product['price_total']"/></td>
+                    </tr>
+                </tbody>
+           </table>
+    </template>
+
+     <template id="report_purchase_order_inherit_document_ramirez" inherit_id="purchase.report_purchaseorder_document">
+          <xpath expr="//div[@id='total']" position="replace">
+            <div id="total" class="row justify-content-end">
+                <div class="col-4">
+                    <table class="table table-sm">
+                      <tr class="border-black">
+                            <td name="td_subtotal_label"><strong>Total modelos</strong></td>
+                            <td class="text-right">
+                                <span t-field="o.qty_product"/>
+                            </td>
+                        </tr>
+                        <tr class="border-black">
+                            <td name="td_subtotal_label"><strong>Subtotal</strong></td>
+                            <td class="text-right">
+                                <span t-field="o.amount_untaxed" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td name="td_taxes_label">Taxes</td>
+                            <td class="text-right">
+                                <span t-field="o.amount_tax" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                            </td>
+                        </tr>
+                        <tr class="border-black o_total">
+                            <td name="td_amount_total_label"><strong>Total</strong></td>
+                            <td class="text-right">
+                                <span t-field="o.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+          </xpath>
+        </template>
+
+
+
+
+     <template id="grid_report_purchaseorder_inherit_ramirez" inherit_id="purchase_product_matrix.grid_purchaseorder_inherit">
+          <xpath expr="//t[@t-call='product_matrix.matrix']" position="replace">
+              <t t-call="purchase_sale.matrix3">
+                <t t-set="order" t-value="o"/>
+              </t>
+        </xpath>
+        <xpath expr="//table[hasclass('table')]" position="replace">
+        </xpath>
+    </template>
+
+
+        <record id="paperformat_euro_landscape" model="report.paperformat">
+            <field name="name">A4</field>
+            <field name="default" eval="True" />
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Landscape</field>
+            <field name="margin_top">40</field>
+            <field name="margin_bottom">28</field>
+            <field name="margin_left">7</field>
+            <field name="margin_right">7</field>
+            <field name="header_line" eval="False" />
+            <field name="header_spacing">35</field>
+            <field name="dpi">90</field>
+        </record>
+
+
+        <report 
+            string="Purchase Order" 
+            id="purchase.action_report_purchase_order" 
+            model="purchase.order" 
+            report_type="qweb-pdf"
+            name="purchase.report_purchaseorder" 
+            file="purchase.report_purchaseorder"
+            print_report_name="
+                (object.state in ('draft', 'sent') and 'Request for Quotation - %s' % (object.name) or
+                'Purchase Order - %s' % (object.name))"
+            paperformat="extend_ramirez.paperformat_euro_landscape"
+
+        />
+
+        <report 
+            string="Request for Quotation" 
+            id="purchase.report_purchase_quotation" 
+            model="purchase.order" 
+            report_type="qweb-pdf"
+            name="purchase.report_purchasequotation" 
+            file="purchase.report_purchasequotation"
+            print_report_name="'Request for Quotation - %s' % (object.name)"            
+            paperformat="extend_ramirez.paperformat_euro_landscape"
+        />
+
+
+
+</odoo>
